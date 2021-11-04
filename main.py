@@ -3,21 +3,33 @@
 # Importar classes
 from petrolero import Petrolero
 from remolcador import Remolcador
+from estados import Estados
 # Importar funciones auxiliares
 import utils
 # Importar librerias linked list
 from collections import deque
+#importar constantes
+from constantes import *
 
 
-ESTADOS = {0, 1, 2, 3, 4, 5, 6} # Posibles estados
-NUM_REMOLCADORES = 20 # Numero maximo de remolcadores
+#class main
+class Main: 
+    # Lista de remolcadores
+    remolcadores = [Remolcador() for i in range(NUM_REMOLCADORES)]
 
-# Lista de remolcadores
-remolcadores = [Remolcador() for i in range(NUM_REMOLCADORES)]
+    tiempos_llegada = utils.init_tiempos_petroleros()
 
-tiempos_llegada = utils.init_tiempos_petroleros()
+    array_petroleros = [Petrolero(t) for t in tiempos_llegada]
 
-array_petroleros = [Petrolero(t) for t in tiempos_llegada]
+    events_list = deque(array_petroleros)
 
-events_list = deque(array_petroleros)
+    # funcion simular
+    def simular(self):
+        pass
 
+    #init
+    def __init__(self):
+        pass
+
+
+Main()
