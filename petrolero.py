@@ -12,7 +12,7 @@ class Petrolero:
         # instante de tiempo para la siguiente accion
         self.tiempo = tiempo
         # estado en el que se encuentra el barco petrolero
-        self.estado = sts.LLEGADA_PETROLERO # estado inicial
+        self.estado = sts.PETROLERO_LLEGA # estado inicial
         #identifier
         Petrolero.__numero_petroleros += 1
         self.id = Petrolero.__numero_petroleros
