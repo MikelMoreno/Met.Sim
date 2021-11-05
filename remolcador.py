@@ -1,8 +1,11 @@
 """ Clase para los remolcadores """
 
+import random
+
 class Remolcador:
     """Barcos remolcadores"""
-    static_count = 0
+    __numero_remolcadores = 0
+
     def __init__(self):
         # instante de tiempo para la siguiente accion
         self.tiempo = 0
@@ -11,4 +14,11 @@ class Remolcador:
         # boolean si el remolcador esta libre o ocupado
         self.libre = True
         #identificador del remolcador
-        self.id = ++Remolcador.static_count
+        Remolcador.__numero_remolcadores += 1
+        self.id = Remolcador.__numero_remolcadores
+
+    def movimiento_puerto_muelle(self, mu, sigma, tiempo):
+        """Calcula el tiempo que tarda el carguero en moverse y devuelve el tiempo 
+        de finalizacion de la tarea"""
+        return tiempo + random.normalvariate(mu, sigma)
+

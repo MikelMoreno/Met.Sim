@@ -1,10 +1,5 @@
 """ Archivo para funciones auxiliares """
 
-def init_tiempos_petroleros():
-    """ Método que devuelve un array con 
-        todos los tiempos de llegada de los petroleros """
-    pass
-
 #metodo que devuelde true si un valor esta entre dos valores
 def between(value, min, max):
     if min <= value < max:
@@ -30,4 +25,4 @@ def getPoissonRate(time):
     else:
         print("Lambda fuera del rango")
         #logging.error("lambda out of index")
-    return lambd;
+    return lambd
