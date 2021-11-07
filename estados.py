@@ -7,4 +7,8 @@ class Estados:
     PETROLERO_DESCARGA = 3
     PETROLERO_ESPERA_SALIDA = 4
     PETROLERO_FIN = 5
-    #QUESTION: ¿es necesario introducir los estados del remolcador?
+
+    CARGUERO_COLA_ENTRADA = 1
+    CARGUERO_DIRECCION_MUELLE = 2
+    CARGUERO_COLA_MUELLE = 3
+    CARGUERO_DIRECCION_PUERTO = 4
