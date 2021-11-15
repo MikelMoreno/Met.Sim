@@ -12,3 +12,6 @@ class Entrada:
 
     def getBarco(self):
         return self.cola_entrada.get()
+
+    def isEmpty(self):
+        return len(self.cola_entrada) == 0

@@ -1,4 +1,5 @@
 from estados import Estados as sts
+from petrolero import Petrolero
 
 ##Clase Lista de Barcos
 class ListPetroleros():
@@ -10,9 +11,9 @@ class ListPetroleros():
     def comparator(self, barco):
         return barco[1]
         
-    def añadirBarco(self,time):
+    def añadirBarco(self, time):
         id = len(self.list)
-        barco = [id, time, sts.PETROLERO_LLEGA, 0]
+        barco = [id, time, sts.LLEGADA_A_PUERTO, 0]
         self.list.append(barco)
         self.list = sorted(self.list, key=self.comparator)
         

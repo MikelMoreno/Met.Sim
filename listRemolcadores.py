@@ -1,3 +1,5 @@
+from estados import Estados as sts
+
 ##Clase Lista de Remolcadores
 class ListRemolcadores():
     list = []
@@ -5,8 +7,9 @@ class ListRemolcadores():
     def __init__(self,num):
         self.lista=[]
         for i in range(num):
-            remolcador=[i,0,1,-1]
-            self.list.append( remolcador)
+            # NOTE: que significa cada cosa de esta lista??
+            remolcador=[i, 0, sts.CARGUERO_COLA_ENTRADA, -1]
+            self.list.append(remolcador)
         
     def comparator(self, remolcador):
         return remolcador[1]

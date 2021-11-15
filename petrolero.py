@@ -7,12 +7,12 @@ class Petrolero:
     """Barcos petroleros"""
     #create a static variable   
     __numero_petroleros = 0
+
     
     def __init__(self, tiempo):
         # instante de tiempo para la siguiente accion
         self.tiempo = tiempo
-        # estado en el que se encuentra el barco petrolero
-        self.estado = sts.PETROLERO_LLEGA # estado inicial
+        self.estado = [None, None, None, None, None, None]
         #identifier
         Petrolero.__numero_petroleros += 1
         self.id = Petrolero.__numero_petroleros
@@ -25,7 +25,15 @@ class Petrolero:
         de finalizacion de la tarea"""
         return tiempo + (60 * np.random.chisquare(x))
 
-    def setEstado(self, estado):
-        self.estado = estado
+    def setEstado(self, estado, tiempo):
+        self.estado[estado] = tiempo
+        if (self.tiempo < tiempo):
+            self.tiempo = tiempo
+    
+    def getEstado(self, estado):
+        return self.estado[estado]
+
+    def getId(self):
+        return self.id
         
 
