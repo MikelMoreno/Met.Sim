@@ -1,123 +1,241 @@
 """ Programa main """
-import random
+# Importar classes
+from petrolero import Petrolero
+from remolcador import Remolcador
+from muelle import Muelle
+from entrada import Entrada
+from listEventos import ListEventos
+from listPetroleros import ListPetroleros
+from listRemolcadores import ListRemolcadores
 from estados import Estados as sts
+# Importar funciones auxiliares
+from utils import *
+# Importar librerias linked list
+from collections import deque
+#importar constantes
+from constantes import *
+
+import random
 
 #class main
 class Main: 
-    listaPetroleros=[]
-    listaRemolcadores =[]
-    muelles = 0
-    tiempo_max = 50
     
     #init
-    def __init__(self,remolcadores,muelles):
+    def __init__(
+        self,
+        num_remolcadores = NUM_REMOLCADORES,
+        tiempo_max = TIEMPO_MAX,
+        num_muelles = NUM_MUELLES,
+        mu_remolcador_vacio = MU_REMOLCADOR_VACIO,
+        sigma_remolcador_vacio = SIGMA_REMOLCADOR_VACIO,
+        grado_libertad_descarga = GRADO_LIBERTAD_DESCARGA,
+        sigma_remolcador_lleno = SIGMA_REMOLCADOR_LLENO,
+        mu_remolcador_lleno = MU_REMOLCADOR_LLENO
+    ):
         # Lista de remolcadores
-        self.listaPetroleros=ListPetroleros()
-        self.listaRemolcadores = ListRemolcadores(remolcadores)
-        self.muelles = muelles
+        self.listaPetroleros= ListPetroleros()
         
-        
-    def between(self,value, min, max):
-        if min <= value < max:
-            return True
-        else:
-            return False
-        
-    def getPoissonRate(self,time):
-        """ Método que devuelve el valor de la distribución de Poisson para un tiempo dado """
-        lambd = 0
-        h_in_day = (time / 60.0) % 24.0
-        if self.between(h_in_day, 0.0, 5):
-            lambd = 2.0 / 5.0 * h_in_day + 5.0
-        elif self.between(h_in_day, 5, 8):
-            lambd = -1.0 / 3.0 * h_in_day + 26.0 / 3.0
-        elif self.between(h_in_day, 8, 15):
-            lambd = 3.0 / 7.0 * h_in_day + 18.0 / 7.0
-        elif self.between(h_in_day, 15, 17):
-            lambd = -3.0 / 2.0 * h_in_day + 63.0/2.0
-        elif self.between(h_in_day, 17, 24):
-            lambd = -1.0 / 7.0 * h_in_day + 59.0 / 7.0
-        else:
-            print("Lambda fuera del rango")
-            #logging.error("lambda out of index")
-        return lambd
+        self.muelles = num_muelles
+        self.tiempo_max = tiempo_max
+        self.mu_remolcador_vacio = mu_remolcador_vacio
+        self.mu_remolcador_lleno = mu_remolcador_lleno
+        self.sigma_remolcador_vacio = sigma_remolcador_vacio
+        self.sigma_remolcador_lleno = sigma_remolcador_lleno
+        self.grado_libertad_descarga = grado_libertad_descarga
 
-    # metodo que inicializa la llegada de todos los petroleros
-    def init_tiempos_petroleros(self):
-        """ Método que devuelve un array con 
-        todos los tiempos de llegada de los petroleros """
-        tiempo = 0
-        # Calculamos el primero en llegar
-        tiempo += 60 * random.expovariate(self.getPoissonRate(tiempo))
-        self.listaPetroleros.añadirBarco(tiempo)
-        # Mientras las llegadas esten dentro del tiempo de simulacion calculamos las siguientes entradas
-        while tiempo < self.tiempo_max:
-            tiempo += 60 * random.expovariate(self.getPoissonRate(tiempo))
-            self.listaPetroleros.añadirBarco(tiempo)
+        # Lista de remolcadores
+        self.listaRemolcadores = ListRemolcadores(num_remolcadores)
+        self.listaPetroleros= ListPetroleros()
+
+        # definir el sistema
+        # cola entrada
+        self.cola_entrada = Entrada()
+        # muelle (puestos_muelle y cola de salida)
+        self.muelle = Muelle()
+
+        self.events_list = ListEventos()
     
     # funcion simular
     def simular(self):
-        self.init_tiempos_petroleros()
-        while self.listaPetroleros().final==False:
-            petrolero = self.listaPetroleros[0]
-            estadoPetrolero = petrolero[2]
-            if estadoPetrolero == sts.PETROLERO_LLEGA:
-                self.estado0(petrolero)
-            elif estadoPetrolero == sts.PETROLERO_ESPERA_ENTRADA:
-                self.estado1(petrolero)
-            elif estadoPetrolero == sts.PERTROLERO_CAMINO_A_MUELLE:
-                self.estado2(petrolero) # no existe
-            elif estadoPetrolero == sts.PETROLERO_DESCARGA:
-                self.estado3(petrolero) #no existe
-            elif estadoPetrolero == sts.PETROLERO_ESPERA_SALIDA:
-                self.estado4(petrolero)
+        tiempo = 0
+        cont = 0
 
-    def estado0(self,petrolero):
-        if self.listaRemolcadores.cola1()==False:
-            remolcador = self.listaRemolcadores[0]
-            tiempo = remolcador[1]
-            if remolcador[2]==3:
-                tiempo = ALEATORIO
-                self.listaRemolcadores.modificar(tiempo,4,-1)
-            self.listaPetroleros.modificar(tiempo,1,-1)
-        else:
-            tiempo =petrolero[1] + ALEATORIO
-            remolcador = self.listaRemolcadores.getOneCola1()
-            self.listaPetroleros.modificar(tiempo,2,remolcador[0])
-            self.listaRemolcadores.modificar(tiempo,2,petrolero[0])
+        # Calculamos el primero en llegar
+        t = 60 * random.expovariate(getPoissonRate(self.tiempo))
+        
+        if tiempo < self.tiempo_max:
+            return -1
+        
+        self.listaPetroleros.añadir(t)
+        self.listaEventos.añadirEvento(LLEGADA_A_PUERTO, t)
 
-    def estado1(self,petrolero):
-        if self.listaRemolcadores.cola1()==False:
-            remolcador = self.listaRemolcadores[0]
-            tiempo = remolcador[1]
-            if remolcador[2]==3:
-                tiempo = ALEATORIO
-                self.listaRemolcadores.modificar(tiempo,4,-1)
-            self.listaPetroleros.modificar(tiempo,1,-1)
-        else:
-            tiempo = ALEATORIO
-            remolcador = self.listaRemolcadores.getOneCola1()
-            self.listaPetroleros.modificar(tiempo,2,remolcador[0])
-            self.listaRemolcadores.modificar(tiempo,2,petrolero[0])
+        while self.listaEventos.lista.size()>0:
+            #POP
+            evento = self.listaEventos.lista[0]
+            id = evento[3] # id del petrolero o del carguero (segun el vento recogido)
+            id_evento = evento[0] # id del evento recogido
+            tiempo = evento[1]
+            self.tiempo = tiempo
 
-    def estado4(self,petrolero):
-        # si no hay remolcadores en cola2
-        if self.listaRemolcadores.cola2()==False:
-            tiempo = tiempo+ ESPERA
-            #estado de espera para salir de la cola = 4
-            #carguero no asignado = -1
-            self.listaPetroleros.modificarBarco(self,tiempo,4, -1)
-        else:
-            #si hay remolcadores en cola2 SE VA AL ESTADO 5
-            tiempo = tiempo + ALEATORIO_salida_del_puerto
-            remolcador = self.listaRemolcadores.getOneCola2()
-            self.listaPetroleros.modificarBarco(tiempo,5, remolcador[0])
-            self.listaRemolcadores.modificarRemolcador(tiempo,4,petrolero[0])
-            
-            #IRSE SOLO si no hay remolcadores en la cola 2 y hay un barco que quiere salir
-            if self.listaRemolcadores.cola2()==False and self.listaPetroleros.cola2()==True:
-                tiempo = tiempo + ALEATORIO_regresa_muelle
-                self.listaRemolcadores.modificarRemolcador(tiempo,4,petrolero[0])
-            #QUEDARSE ESPERANDO
+            if(id_evento == LLEGADA_A_PUERTO):
+                self.eventoLlegada(id)
+            elif(id_evento == CARGUERO_ENTRADA_MUELLE_LLENO):
+                self.eventoPuertoMuelleLleno(id)
+            elif(id_evento == CARGUERO_ENTRADA_MUELLE_VACIO):
+                self.eventoPuertoMuelleVacio(id)
+            elif(id_evento == CARGUERO_MUELLE_ENTRADA_LLENO):
+                self.eventoMuellePuertoLleno(id)
+            elif(id_evento == CARGUERO_MUELLE_ENTRADA_VACIO):
+                self.eventoMuellePuertoVacio(id)
+            elif(id_evento == PETROLERO_DESCARGA):
+                self.eventoDescarga(id)
             else:
-                self.listaRemolcadores.modificarRemolcador(tiempo,1,petrolero[0])
+                print("Error: Evento desconocido")
+                exit()
+
+
+
+    #Calculo si lanzo eventoPuertoMuelleLleno o meto en la cola. Calculo siguiente llegada.¿Calculamos posible eventoMuellePuertoVacio?  
+    def eventoLLegada(iD):
+        #Calculo siguiente entrada
+        tiempoSiguiente = t + 60 * random.expovariate(self.getPoissonRate(self.tiempo))
+        
+        if tiempoSiguiente < self.tiempo_max:
+            self.listaPetroleros.añadir(tiempoSiguiente)
+            self.listaEventos.añadirEvento(0,tiempoSiguiente)
+        if self.colaEntrada.isEmpty() and self.listaMuelles.libre():
+            if self.listaCargueros.libreEntrada():
+                #tiempo de llegada a muelle por remolcador lleno siguiendo una distribución normal
+                tiempo = t + 60 * random.expovariate(tiempo + random.normalvariate(self.mu_remolcador_lleno, self.sigma_remolcador_lleno))
+                carguero = self.listaCarguero.getLibreEntrada()
+                self.listaCargueros.modificar(carguero[0],tiempo,1,iD)
+                self.listaPetroleros.modificar(iD,tiempo,1,carguero[0])
+               
+                
+                petrolero = self.listaPetroleros.getById(iD)
+                self.listaMuelles.append(petrolero)
+                
+                self.listaEventos.añadirEvento(1,tiempo)
+                
+                #TENDRIA QUE ASIGNARLE YA EL CARGUERO?
+            elif self.listaCargueros.libreSalida:
+                tiempo = t + 60 * random.expovariate(tiempo + random.normalvariate(self.mu_remolcador_vacio, self.sigma_remolcador_vacio))
+                carguero = self.listaCarguero.getLibreEntrada()
+                
+                #Y AL CONTRARIO¿
+                self.listaCargueros.modificar(carguero[0],tiempo,1,iD)
+                
+                
+                petrolero = self.listaPetroleros.getById(iD)
+                self.colaEntrada.append(petrolero)
+                
+                self.listaEventos.añadirEvento(4,tiempo)
+
+            
+        else:
+            petrolero = self.listaPetroleros.getById(iD)
+            self.colaEntrada.append(petrolero)
+            
+
+    
+    
+    #Calculo si lanzo eventoMuellePuertoLleno o eventoMuellePuertoVacio y eventoDescarga.
+    def eventoPuertoMuelleLleno(iD):
+        tiempoDescarga = t + (60 * np.random.chisquare(self.tiempo))
+        carguero = self.listaCarguero.getById(iD)
+        self.listaPetroleros.modificar(carguero[3],tiempoDescarga,5,-1)
+        self.listaCarguero.modificar(iD,tiempoDescarga,2,-1)
+        self.listaEventos.añadirEvento(2,tiempoDescarga,iD)
+        #Si no hay colaSalida, si hay colaEntrada y hay muelles disponibles
+        #VUELVO VACIO
+        if self.colaSalida.isEmpty() and self.colaEntrada.Lleno() and self.listaMuelles.libre():
+            tiempoSolo = t + get_tiempo_vacio(tiempo)
+            self.listaCarguero.modificar(iD,tiempoSolo,3,-1)
+            self.listaEventos.añadirEvento(4,tiempoSolo,iD)
+        #Si hay cola de salida
+        #VUELVO LLENO
+        if self.colaSalida.Lleno():
+            tiempoLleno = t + get_tiempo_lleno(tiempo)
+            petrolero = self.colaSalida[0]
+            self.listaCargueros.modificar(iD,tiempoLleno,3,petrolero[0])
+            self.listaPetroleros.modificar(petrolero[0],tiempoLleno,3,iD)
+            self.listaMuelles.eliminar(iD)
+            self.listaEventos.añadirEvento(3,tiempoLleno)
+        
+    
+    #Calculo si lanzo eventoMuellePuertoLleno o ¿eventoMuellePuertoVacio?
+    def eventoPuertoMuelleVacio(iD):
+        self.listaCarguero.modificarPorId(iD,self.t,2,-1)
+        #Vuelvo vacio
+        #Si no hay cola y si la cola salida.
+        if self.colaSalida.isEmpty() and self.colaEntrada.Lleno() and self.listaMuelles.libre():
+            tiempoSolo= t + get_tiempo_vacio(tiempo)
+            self.listaCarguero.modificar(iD,tiempoSolo,1,-1)
+            self.listaEventos.añadirEvento(2,tiempoSolo)
+        #Vuelvo lleno
+        #Si hay cola 
+        elif self.colaSalida.Lleno():
+            tiempoLleno = t + get_tiempo_lleno(tiempo)
+            petrolero = self.colaEntrada.lista[0]
+            self.listaCarguero.modificar(iD,tiempoLleno,1,petrolero[0])
+            self.listaPetroleros.modificar(petrolero[0],tiempoLleno,3,iD)
+            self.listaEventos.añadirEvento(1,tiempoLleno)
+    
+    
+    #Calculo si lanzo eventoPuertoMuelleLleno o eventoPuertoMuelleVacío.
+    def eventoMuellePuertoLleno(iD):
+        carguero = self.listaCarguero.modificar
+        self.listaPetroleros.modificar(iD,carguero[1],0,-1)
+        self.listaPetroleros.modificar(carguero[3],carguero[1],6,-1)
+        #Vuelvo vacio
+        #Si no hay cola y si la cola salida.
+        if self.colaEntrada.isEmpty() and self.colaSalida.Lleno():
+            tiempoSolo= t + get_tiempo_vacio(tiempo)
+            self.listaCarguero.modificar(iD,tiempoSolo,1,-1)
+            self.listaEventos.añadirEvento(2,tiempoSolo)
+        #Vuelvo lleno
+        #Si hay cola y muelles
+        elif self.colaEntrada.Lleno() and self.listaMuelles.libre():
+            tiempoLleno = t+ get_tiempo_lleno(tiempo)
+            petrolero = self.colaEntrada.lista[0]
+            self.listaCarguero.modificar(iD,tiempoLleno,1,petrolero[0])
+            self.listaPetroleros.modificar(petrolero[0],tiempoLleno,1,iD)
+            self.listaEventos.añadirEvento(1,tiempoLleno)
+    
+    #Calculo si lanzo eventoPuertoMuelleLleno o eventoPuertoMuelleVacío.
+    def eventoMuellePuertoVacio(iD):
+        #Vuelvo vacio
+        #Si no hay cola y si la cola salida.
+        if self.colaEntrada.isEmpty() and self.colaSalida.Lleno():
+            tiempoSolo = t + get_tiempo_vacio(tiempo)
+            self.listaCarguero.modificar(iD,tiempoSolo,1,-1)
+            self.listaEventos.añadirEvento(2,tiempoSolo)
+        #Vuelvo lleno
+        #Si hay cola y muelles
+        elif self.colaEntrada.Lleno() and self.listaMuelles.libre():
+            tiempoLleno = t + get_tiempo_lleno(tiempo)
+            petrolero = self.colaEntrada.lista[0]
+            self.listaCarguero.modificar(iD,tiempoLleno,1,petrolero[0])
+            self.listaPetroleros.modificar(petrolero[0],tiempoLleno,1,iD)
+            self.listaEventos.añadirEvento(1,tiempoLleno)
+    
+    #Calculo si lanzo eventoMuellePuertoLleno o meto en la cola o eventoPuertoMuelleVacio.
+    def eventoDescarga(iD):
+        petrolero = self.listaPetrolero.getById(iD)
+        if self.listaCargueros.libreSalida:
+            carguero = self.listaCargueros.getLibreSalida()
+            tiempoLleno = t + get_tiempo_lleno(tiempo)
+            self.listaCargueros.modificar(carguero[0],tiempoLleno,3,iD)
+            self.listaPetroleros.modificar(iD,tiempoLleno,3,carguero[0])
+            self.listaMuelles.eliminar(iD)
+            self.listaEventos.añadirEvento(3,tiempoLleno)
+            #ASIGNO YA EL CARGUERO?
+        elif self.listaCargueros.libreEntrada:
+            carguero = self.listaCargueros.getLibreEntrada()
+            tiempoVacio= t + get_tiempo_vacio(tiempo)
+            self.listaCargueros.modificarPorId(carguero[0],tiempoVacio,1,-1)
+            self.listaEventos.añadirEvento(2,tiempoVacio)
+            self.colaSalida.append(petrolero)
+        elif self.colaSalida.Lleno():
+            self.colaSalida.append(petrolero)
+            

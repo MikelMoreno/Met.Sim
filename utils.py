@@ -26,3 +26,13 @@ def getPoissonRate(time):
         print("Lambda fuera del rango")
         #logging.error("lambda out of index")
     return lambd
+
+def get_tiempo_vacio(tiempo):
+    """ Método que devuelve el tiempo de movimiento
+        para un remolcador vacío """
+    return 60 * random.expovariate(tiempo + random.normalvariate(MU_REMOLCADOR_VACIO, SIGMA_REMOLCADOR_VACIO))
+
+def get_tiempo_lleno(tiempo):
+    """ Método que devuelve el tiempo de movimiento
+        para un remolcador lleno """
+    return 60 * random.expovariate(tiempo + random.normalvariate(MU_REMOLCADOR_LLENO, SIGMA_REMOLCADOR_LLENO))
