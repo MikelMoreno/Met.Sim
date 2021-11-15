@@ -1,6 +1,7 @@
 """ Archivo para funciones auxiliares """
 
 import random
+from constantes import *
 
 #metodo que devuelde true si un valor esta entre dos valores
 def between(value, min, max):
