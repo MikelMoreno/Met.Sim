@@ -21,3 +21,10 @@ class Muelle:
 
     def libre(self):
         return self.max_barcos != self.barcos_en_muelle
+
+    def isEmpty(self):
+        return self.cola_salida.qsize() == 0
+
+    def eliminar(self):
+        self.barcos_en_muelle -=1
+        
