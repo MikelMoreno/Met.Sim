@@ -12,7 +12,7 @@ class Muelle:
         self.cola_salida.put(barco)
 
     def popBarcoEspera(self):
-        barco = self.cola_salida.pop()
+        barco = self.cola_salida.get()
         self.barcos_en_muelle -= 1
         return barco
 

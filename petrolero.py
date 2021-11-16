@@ -1,5 +1,6 @@
 """ Clase para los barcos petroleros """
 import numpy as np
+
 from estados import Estados as sts
 from evento import Evento
 

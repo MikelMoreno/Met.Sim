@@ -24,8 +24,16 @@ class ListaCargueros:
         carguero[2] = estado
         carguero[3] = petrolero
         self.list[num]=carguero
-        self.list = sorted(self.list, key=self.comparator)
-        
+        self.list = sorted(self.list)
+
+    def getPosId(self,iD):
+        res=0
+        for carguero in self.list:
+            if carguero[0] == iD:
+                break
+            res = res+1
+                
+        return res    
         
     def libreEntrada(self):
         res=False

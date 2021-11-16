@@ -44,7 +44,15 @@ class ListPetroleros():
         petrolero[3] = carguero
         self.list[num]=petrolero
         self.list = sorted(self.list, key=self.comparator)
-        
+
+    def getPosId(self,iD):
+        res=0
+        for petrolero in self.list:
+            if petrolero[0] == iD:
+                break
+            res = res+1
+                
+        return res     
     def getById(self,id):
         res = []
         for barco in self.list:

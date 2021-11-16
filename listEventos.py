@@ -13,5 +13,5 @@ class ListEventos():
         return len(self.list)
 
     def getEvento(self):
-        return self.list.pop()
+        return self.list.pop(0)
         

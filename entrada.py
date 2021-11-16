@@ -12,7 +12,7 @@ class Entrada:
         self.cola_entrada.put(barco)
 
     def popBarcoEspera(self):
-        barco = self.cola_entrada.pop()
+        barco = self.cola_entrada.get()
         return barco
 
     def isEmpty(self):
