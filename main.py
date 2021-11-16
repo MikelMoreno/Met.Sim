@@ -6,7 +6,7 @@ from muelle import Muelle
 from entrada import Entrada
 from listEventos import ListEventos
 from listPetroleros import ListPetroleros
-from listRemolcadores import ListRemolcadores
+from listaCargueros import ListaCargueros
 from estados import Estados as sts
 # Importar funciones auxiliares
 from utils import *
@@ -42,14 +42,14 @@ class Main:
         self.tiempo = 0
 
         # Lista de remolcadores
-        self.listaCargueros = ListRemolcadores(num_remolcadores)
+        self.listaCargueros = ListaCargueros(num_remolcadores)
         self.listaPetroleros= ListPetroleros()
 
         # definir el sistema
         # cola entrada
         self.colaEntrada = Entrada()
         # muelle (puestos_muelle y cola de salida)
-        self.listaMuelles = Muelle()
+        self.listaMuelles = Muelle(num_muelles)
         self.listaEventos = ListEventos()
     
     # funcion simular
@@ -87,31 +87,29 @@ class Main:
                 self.eventoDescarga(id)
             else:
                 print("Error: Evento desconocido")
-                exit()
 
 
 
     #Calculo si lanzo eventoPuertoMuelleLleno o meto en la cola. Calculo siguiente llegada.¿Calculamos posible eventoMuellePuertoVacio?  
     def eventoLLegada(self):
+        self.listaPetroleros.añadirBarco(self.tiempo)
+        iD = self.listaPetroleros.getLastInserted()
+
         #Calculo siguiente entrada
         tiempoSiguiente = self.tiempo + 60 * random.expovariate(getPoissonRate(self.tiempo))
         if tiempoSiguiente <= self.tiempo_max:
-            self.listaPetroleros.añadirBarco(tiempoSiguiente)
             self.listaEventos.añadirEvento(sts.LLEGADA_A_PUERTO,tiempoSiguiente)
-
         
         if self.colaEntrada.isEmpty() and self.listaMuelles.libre():
-            # Oier: he llegado hasta aqui tenemos que ver como organizar la lista de cargueros
             if self.listaCargueros.libreEntrada():
                 #tiempo de llegada a muelle por remolcador lleno siguiendo una distribución normal
                 tiempo = self.tiempo + 60 * random.expovariate(self.tiempo + random.normalvariate(self.mu_remolcador_lleno, self.sigma_remolcador_lleno))
-                carguero = self.listaCarguero.getLibreEntrada()
+                carguero = self.listaCargueros.getLibreEntrada()
                 self.listaCargueros.modificar(carguero[0],tiempo,1,iD)
                 self.listaPetroleros.modificar(iD,tiempo,1,carguero[0])
                
-                
                 petrolero = self.listaPetroleros.getById(iD)
-                self.listaMuelles.append(petrolero)
+                self.listaMuelles.addBarcoMuelle(petrolero)
                 
                 self.listaEventos.añadirEvento(1,tiempo)
                 
@@ -125,14 +123,13 @@ class Main:
                 
                 
                 petrolero = self.listaPetroleros.getById(iD)
-                self.colaEntrada.append(petrolero)
+                self.colaEntrada.addBarco(petrolero)
                 
                 self.listaEventos.añadirEvento(4,tiempo)
-
-            
+  
         else:
             petrolero = self.listaPetroleros.getById(iD)
-            self.colaEntrada.append(petrolero)
+            self.colaEntrada.addBarco(petrolero)
             
 
     

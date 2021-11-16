@@ -3,6 +3,7 @@
 import queue
 
 class Entrada:
+    cola_entrada = queue.Queue()
 
     def _init_(self):
         self.cola_entrada = queue.Queue()
@@ -14,4 +15,4 @@ class Entrada:
         return self.cola_entrada.get()
 
     def isEmpty(self):
-        return len(self.cola_entrada) == 0
+        return self.cola_entrada.qsize() == 0
