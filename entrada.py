@@ -3,6 +3,7 @@
 import queue
 
 class Entrada:
+    cola_entrada = queue.Queue()
 
     def _init_(self):
         self.cola_entrada = queue.Queue()
@@ -10,5 +11,9 @@ class Entrada:
     def addBarco(self, barco):
         self.cola_entrada.put(barco)
 
-    def getBarco(self):
-        return self.cola_entrada.get()
+    def popBarcoEspera(self):
+        barco = self.cola_entrada.pop()
+        return barco
+
+    def isEmpty(self):
+        return self.cola_entrada.qsize() == 0

@@ -1,4 +1,5 @@
 from estados import Estados as sts
+from petrolero import Petrolero
 
 ##Clase Lista de Barcos
 class ListPetroleros():
@@ -6,15 +7,18 @@ class ListPetroleros():
     
     def __init__(self):
         self.list=[]
+        self.ultimoInsertado = None
         
     def comparator(self, barco):
         return barco[1]
         
-    def añadirBarco(self,time):
+    def añadirBarco(self, time):
         id = len(self.list)
-        barco = [id, time, sts.PETROLERO_LLEGA, 0]
+        barco = [id, time, sts.LLEGADA_A_PUERTO, 0]
         self.list.append(barco)
         self.list = sorted(self.list, key=self.comparator)
+
+        self.ultimoInsertado = barco
         
     def cola1(self):
         res=False
@@ -32,12 +36,13 @@ class ListPetroleros():
                 break
         return res
     
-    def modificarBarco(self,time,estado,carguero):
-        barco = self.list[0]
-        barco[1] = barco[1]+time #tiempo
-        barco[2] = estado
-        barco[3] = carguero #carguero asignado
-        self.list[0]=barco
+    def modificar(self,iD,time,estado,carguero):    
+        petrolero = self.getById(iD)
+        num = self.getPosId(iD)
+        petrolero[1] = time
+        petrolero[2] = estado
+        petrolero[3] = carguero
+        self.list[num]=petrolero
         self.list = sorted(self.list, key=self.comparator)
         
     def getById(self,id):
@@ -55,4 +60,10 @@ class ListPetroleros():
                 res = False
                 break
         return res
+
+    def comparator2(self, barco):
+        return barco[0]
+
+    def getLastInserted(self):
+        return self.ultimoInsertado
             
