@@ -52,7 +52,38 @@ class Main:
         # muelle (puestos_muelle y cola de salida)
         self.listaMuelles = Muelle(num_muelles)
         self.listaEventos = ListEventos()
-    
+        #estadisticos
+        self.tiempoMedioAtracar = 0
+        self.tiempoMaxAtracar = 0
+        self.mediaBarcosMuelle = 0
+        self.mediaEspera = 0
+        self.maxEspera = 0
+
+
+        #actualización de estadisticos
+    def actualizarEstadisticos(self,tAtraco,tCola,):
+        if tAtraco > self.tiempoMaxAtracar:
+            self.tiempoMaxAtracar = tAtraco
+        if tCola > self.maxEspera :
+            self.maxEspera = tCola
+        self.tiempoMedioAtracar += tAtraco
+        self.mediaEspera += tCola
+
+    def actualizarBarcosMuelle(self,tMuelle):
+        self.mediaBarcosMuelle += tMuelle
+    def finalizarEstadisticos(self):
+        self.tiempoMedioAtracar = self.tiempoMedioAtracar/len(self.listaPetroleros.list)
+        self.mediaBarcosMuelle = self.mediaBarcosMuelle/self.tiempo
+        self.mediaEspera = self.mediaEspera/len(self.listaPetroleros.list)
+
+        print(self.tiempoMedioAtracar)
+        print(self.tiempoMaxAtracar)
+        print(self.mediaBarcosMuelle)
+        print(self.mediaEspera)
+        print(self.maxEspera)
+        print(self.tiempo)
+        print(len(self.listaPetroleros.list))
+
     # funcion simular
     def simular(self):
         cont = 0
@@ -98,6 +129,7 @@ class Main:
                     self.eventoDescarga(id)
                 else:
                     print("Error: Evento desconocido")
+            self.finalizarEstadisticos()
 
 
 
@@ -133,6 +165,12 @@ class Main:
                 # actualizamos el muelle para reservarlo al barco
                 self.listaMuelles.addBarcoMuelle() 
                 self.listaEventos.añadirEvento(sts.CARGUERO_ENTRADA_MUELLE_LLENO,tiempo,carguero[0])
+                
+                #Estadisticas
+                petrolero = self.listaPetroleros.getById(iD)
+                tiempoAtraco = tiempo - petrolero[1]
+                tiempoEspera = self.tiempo - petrolero[1]
+                self.actualizarEstadisticos(tiempoAtraco,tiempoEspera)
             
             else:
                 self.colaEntrada.addBarco(petrolero)
@@ -161,6 +199,10 @@ class Main:
         
         self.listaPetroleros.modificar(carguero[3],tiempoDescarga,4,-1)
         self.listaCargueros.modificar(iD,tiempoDescarga, sts.CARGUERO_COLA_MUELLE,-1)
+        
+        #Estadistico muelles
+        tiempo =tiempoDescarga-self.tiempo
+        self.actualizarBarcosMuelle(tiempo)
 
         self.listaEventos.añadirEvento(sts.PETROLERO_DESCARGA,tiempoDescarga,iDPetrolero)
         #Si hay cola de salida
@@ -168,6 +210,11 @@ class Main:
         if not self.listaMuelles.isEmpty():
             tiempoLleno = self.tiempo + get_tiempo_lleno(self.tiempo)
             petrolero = self.listaMuelles.popBarcoEspera()
+
+            #Estadistico muelles
+            tiempoMuelle = self.tiempo - petrolero[1]
+            self.actualizarBarcosMuelle(tiempoMuelle)
+
             self.listaCargueros.modificar(iD,tiempoLleno,3,petrolero[0])
             self.listaPetroleros.modificar(petrolero[0],tiempoLleno,3,iD)
 
@@ -196,6 +243,11 @@ class Main:
         elif not self.listaMuelles.isEmpty():
             tiempoLleno = self.tiempo + get_tiempo_lleno(self.tiempo)
             petrolero = self.listaMuelles.popBarcoEspera()
+
+            #Estadistico muelles
+            tiempoMuelle = self.tiempo - petrolero[1]
+            self.actualizarBarcosMuelle(tiempoMuelle)
+
             self.listaCargueros.modificar(iD,tiempoLleno,3,petrolero[0])
             self.listaPetroleros.modificar(petrolero[0],tiempoLleno,3,iD)
 
@@ -221,6 +273,12 @@ class Main:
         elif not self.colaEntrada.isEmpty() and self.listaMuelles.libre():
             tiempoLleno = self.tiempo+ get_tiempo_lleno(self.tiempo)
             petrolero = self.colaEntrada.popBarcoEspera()
+
+             #Estadisticas
+            tiempoAtraco = tiempoLleno - petrolero[1]
+            tiempoEspera = self.tiempo - petrolero[1]
+            self.actualizarEstadisticos(tiempoAtraco,tiempoEspera)
+
             self.listaCargueros.modificar(iD,tiempoLleno,1,petrolero[0])
             self.listaPetroleros.modificar(petrolero[0],tiempoLleno,1,iD)
             self.listaMuelles.addBarcoMuelle()
@@ -245,6 +303,12 @@ class Main:
         elif not self.colaEntrada.isEmpty() and self.listaMuelles.libre():
             tiempoLleno = self.tiempo + get_tiempo_lleno(self.tiempo)
             petrolero = self.colaEntrada.popBarcoEspera()
+
+            #Estadisticas
+            tiempoAtraco = tiempoLleno - petrolero[1]
+            tiempoEspera = self.tiempo - petrolero[1]
+            self.actualizarEstadisticos(tiempoAtraco,tiempoEspera)
+
             self.listaCargueros.modificar(iD,tiempoLleno,1,petrolero[0])
             self.listaPetroleros.modificar(petrolero[0],tiempoLleno,1,iD)
             self.listaMuelles.addBarcoMuelle()
