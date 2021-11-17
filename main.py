@@ -206,7 +206,7 @@ class Main:
         iDPetrolero= carguero[3]
         
         self.listaPetroleros.modificar(carguero[3],tiempoDescarga,4,-1)
-        self.listaCargueros.modificar(iD,tiempoDescarga, sts.CARGUERO_COLA_MUELLE,-1)
+        self.listaCargueros.modificar(iD,self.tiempo, sts.CARGUERO_COLA_MUELLE,-1)
         
         #Estadistico muelles
         tiempo =tiempoDescarga-self.tiempo
