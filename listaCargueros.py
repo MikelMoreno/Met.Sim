@@ -6,7 +6,7 @@ class ListaCargueros:
     def __init__(self,num):
         self.list=[]
         for i in range(num):
-            carguero=[i,0,0,-1]
+            carguero=[i+1,0,0,-1]
             self.list.append( carguero)
             
     def getById(self,id):
@@ -24,7 +24,6 @@ class ListaCargueros:
         carguero[2] = estado
         carguero[3] = petrolero
         self.list[num]=carguero
-        self.list = sorted(self.list)
 
     def getPosId(self,iD):
         res=0

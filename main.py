@@ -104,47 +104,52 @@ class Main:
     #Calculo si lanzo eventoPuertoMuelleLleno o meto en la cola. Calculo siguiente llegada.¿Calculamos posible eventoMuellePuertoVacio?  
     def eventoLLegada(self):
         self.listaPetroleros.añadirBarco(self.tiempo)
-        iD = self.listaPetroleros.getLastInserted()[0]
+        petrolero = self.listaPetroleros.getLastInserted()
+        iD = petrolero[0]
         #Calculo siguiente entrada
         tiempoSiguiente = self.tiempo + 60 * random.expovariate(getPoissonRate(self.tiempo))
         if tiempoSiguiente <= self.tiempo_max:
-            self.listaEventos.añadirEvento(sts.LLEGADA_A_PUERTO,tiempoSiguiente,iD+1)
+            self.listaEventos.añadirEvento(sts.LLEGADA_A_PUERTO,tiempoSiguiente)
+
+        if not self.colaEntrada.isEmpty():
+            self.colaEntrada.addBarco(petrolero)
+
         #Si no hay cola y hay muelles libres
-        if self.colaEntrada.isEmpty() and self.listaMuelles.libre():
+        elif self.listaMuelles.libre():
             #Ademas hay cargueros disponibles hago CARGUERO_ENTRADA_MUELLE_LLENO
             if self.listaCargueros.libreEntrada():
                 #tiempo de llegada a muelle por remolcador lleno siguiendo una distribución normal
                 tiempo = self.tiempo + 60 * random.expovariate(self.tiempo + random.normalvariate(self.mu_remolcador_lleno, self.sigma_remolcador_lleno))
                 carguero = self.listaCargueros.getLibreEntrada()
-                self.listaCargueros.modificar(carguero[0],tiempo,1,iD)
-                self.listaPetroleros.modificar(iD,tiempo,1,carguero[0])
+                self.listaCargueros.modificar(carguero[0],tiempo,sts.CARGUERO_DIRECCION_MUELLE,iD)
+
+                # Oier: esto de aqui no tiene sentido, el petrolero no puede 
+                # estar en evento 1 es un evento de carguero
+                # esto se debe de actualizar cuando el carguero llega al muelle si 
+                # lleva un barco porque entonces es cuando ha terminado el evento
+                #
+                # self.listaPetroleros.modificar(iD,tiempo,1,carguero[0])
                
-                petrolero = self.listaPetroleros.getById(iD)
-                self.listaMuelles.addBarcoMuelle()
-                
+                # actualizamos el muelle para reservarlo al barco
+                self.listaMuelles.addBarcoMuelle() 
                 self.listaEventos.añadirEvento(sts.CARGUERO_ENTRADA_MUELLE_LLENO,tiempo,carguero[0])
-                #Si no hay cargueros disponibles en la entrada pero si en salida hago CARGUERO_MUELLE_ENTRADA_VACIO
-            elif self.listaCargueros.libreSalida():
-                tiempo = self.tiempo + 60 * random.expovariate(self.tiempo + random.normalvariate(self.mu_remolcador_vacio, self.sigma_remolcador_vacio))
-                carguero = self.listaCargueros.getLibreSalida()
-                 #TENDRIA QUE ASIGNARLE YA EL CARGUERO?
-
-                #Y AL CONTRARIO¿
-                self.listaCargueros.modificar(carguero[0],tiempo,3,iD)
-                
-                
-                petrolero = self.listaPetroleros.getById(iD)
-                self.colaEntrada.addBarco(petrolero)
-                
-                self.listaEventos.añadirEvento(sts.CARGUERO_MUELLE_ENTRADA_VACIO,tiempo,carguero[0])
-  
-        else:
-            petrolero = self.listaPetroleros.getById(iD)
-            self.colaEntrada.addBarco(petrolero)
             
+            else:
+                self.colaEntrada.addBarco(petrolero)
 
-    
-    
+                # si hay un carguero esperando en el muelle le decimos que venga a recoger
+                if self.listaCargueros.libreSalida():
+                    tiempo = self.tiempo + 60 * random.expovariate(self.tiempo + random.normalvariate(self.mu_remolcador_vacio, self.sigma_remolcador_vacio))
+                    carguero = self.listaCargueros.getLibreSalida()
+                    #TENDRIA QUE ASIGNARLE YA EL CARGUERO?
+
+                    #Y AL CONTRARIO¿
+                    # Oier: cuidado aqui, le estas asignando el iD de un 
+                    # barco cuando el carguero viene vacio
+                    self.listaCargueros.modificar(carguero[0],tiempo,sts.CARGUERO_DIRECCION_PUERTO,iD)
+                    self.listaEventos.añadirEvento(sts.CARGUERO_MUELLE_ENTRADA_VACIO,tiempo,carguero[0])      
+
+
     #Calculo si lanzo eventoMuellePuertoLleno o eventoMuellePuertoVacio y eventoDescarga.
     def eventoPuertoMuelleLleno(self, iD):
         #El evento descarga siempre se hace
@@ -154,15 +159,9 @@ class Main:
         iDPetrolero= carguero[3]
         
         self.listaPetroleros.modificar(carguero[3],tiempoDescarga,4,-1)
-        self.listaCargueros.modificar(iD,tiempoDescarga,2,-1)
+        self.listaCargueros.modificar(iD,tiempoDescarga, sts.CARGUERO_COLA_MUELLE,-1)
 
         self.listaEventos.añadirEvento(sts.PETROLERO_DESCARGA,tiempoDescarga,iDPetrolero)
-        #Si no hay colaSalida, si hay colaEntrada y hay muelles disponibles
-        #VUELVO VACIO
-        if self.listaMuelles.isEmpty() and not self.colaEntrada.isEmpty() and self.listaMuelles.libre():
-            tiempoSolo = self.tiempo + get_tiempo_vacio(self.tiempo)
-            self.listaCargueros.modificar(iD,tiempoSolo,3,-1)
-            self.listaEventos.añadirEvento(4,tiempoSolo,iD)
         #Si hay cola de salida
         #VUELVO LLENO
         if not self.listaMuelles.isEmpty():
@@ -172,6 +171,13 @@ class Main:
             self.listaPetroleros.modificar(petrolero[0],tiempoLleno,3,iD)
 
             self.listaEventos.añadirEvento(sts.CARGUERO_MUELLE_ENTRADA_LLENO,tiempoLleno,iD)
+
+        #Si no hay colaSalida, si hay colaEntrada y hay muelles disponibles
+        #VUELVO VACIO
+        elif not self.colaEntrada.isEmpty() and self.listaMuelles.libre():
+            tiempoSolo = self.tiempo + get_tiempo_vacio(self.tiempo)
+            self.listaCargueros.modificar(iD,tiempoSolo,sts.CARGUERO_DIRECCION_PUERTO,-1)
+            self.listaEventos.añadirEvento(4,tiempoSolo,iD)
         
     
     #Calculo si lanzo eventoMuellePuertoLleno o ¿eventoMuellePuertoVacio?
@@ -222,15 +228,17 @@ class Main:
     #Calculo si lanzo eventoPuertoMuelleLleno o eventoPuertoMuelleVacío.
     def eventoMuellePuertoVacio(self, iD):
         carguero = self.listaCargueros.getById(iD)
-        self.listaCargueros.modificar(iD,self.tiempo,0,-1)
+        self.listaCargueros.modificar(iD,self.tiempo,sts.CARGUERO_COLA_ENTRADA,-1)
         #Vuelvo vacio
         #Si no hay cola y si la cola salida.
+        # Oier: No entiendo este if, si no hay nadie esperando a entrar y 
+        # los muelles estan esperando a salir y hay cargueros esperando voy al muelle? 
+        # Sera si estan esperando para salir no?
         if self.colaEntrada.isEmpty() and not self.listaMuelles.isEmpty() and self.listaCargueros.libreSalida():
             tiempoSolo = self.tiempo + get_tiempo_vacio(self.tiempo)
-            self.listaCargueros.modificar(iD,tiempoSolo,1,-1)
-
+            self.listaCargueros.modificar(iD,tiempoSolo,sts.CARGUERO_DIRECCION_MUELLE,-1)
             self.listaEventos.añadirEvento(sts.CARGUERO_ENTRADA_MUELLE_VACIO,tiempoSolo,iD)
-        #Vuelvo lleno
+
         #Si hay cola y muelles
         elif not self.colaEntrada.isEmpty() and self.listaMuelles.libre():
             tiempoLleno = self.tiempo + get_tiempo_lleno(self.tiempo)
@@ -251,26 +259,22 @@ class Main:
             tiempoLleno = self.tiempo + get_tiempo_lleno(self.tiempo)
 
             self.listaCargueros.modificar(carguero[0],tiempoLleno,3,iD)
-            self.listaPetroleros.modificar(iD,tiempoLleno,3,carguero[0])
+            self.listaPetroleros.modificar(iD,tiempoLleno,sts.CARGUERO_DIRECCION_PUERTO,carguero[0])
             self.listaMuelles.eliminar()
 
             self.listaEventos.añadirEvento(sts.CARGUERO_MUELLE_ENTRADA_LLENO,tiempoLleno,carguero[0])
             #ASIGNO YA EL CARGUERO?
 
-        elif self.listaCargueros.libreEntrada():
-            carguero = self.listaCargueros.getLibreEntrada()
-            tiempoVacio= self.tiempo + get_tiempo_vacio(self.tiempo)
-            self.listaCargueros.modificar(carguero[0],tiempoVacio,1,-1)
+        else:
             self.listaMuelles.addBarcoEspera(petrolero)
+            if self.listaCargueros.libreEntrada():
+                carguero = self.listaCargueros.getLibreEntrada()
+                tiempoVacio= self.tiempo + get_tiempo_vacio(self.tiempo)
+                self.listaCargueros.modificar(carguero[0],tiempoVacio,sts.CARGUERO_DIRECCION_MUELLE,-1)
+                self.listaEventos.añadirEvento(sts.CARGUERO_ENTRADA_MUELLE_VACIO,tiempoVacio,carguero[0])
 
-            self.listaEventos.añadirEvento(sts.CARGUERO_ENTRADA_MUELLE_VACIO,tiempoVacio,carguero[0])
-
-        elif not self.listaMuelles.isEmpty():
-            self.listaMuelles.addBarcoEspera(petrolero)
 
 if __name__ == '__main__':
     simul = Main()
     simul.simular()
-
-simulacion = Main()
 

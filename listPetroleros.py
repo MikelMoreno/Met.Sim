@@ -13,7 +13,7 @@ class ListPetroleros():
         return barco[1]
         
     def añadirBarco(self, time):
-        id = len(self.list)
+        id = len(self.list) + 1
         barco = [id, time, sts.LLEGADA_A_PUERTO, 0]
         self.list.append(barco)
         self.list = sorted(self.list, key=self.comparator)
