@@ -57,36 +57,40 @@ class Main:
         self.tiempoMaxAtracar = 0
         self.mediaBarcosMuelle = 0
         self.mediaEspera = 0
+        self.mediaBarcosCola = 0
+        self.maxBarcosCola = 0
         self.maxEspera = 0
 
 
         #actualización de estadisticos
-    def actualizarEstadisticos(self,tAtraco,tCola,):
+    def actualizarEstadisticos(self,tAtraco,tCola, nCola):
         if tAtraco > self.tiempoMaxAtracar:
             self.tiempoMaxAtracar = tAtraco
         if tCola > self.maxEspera :
             self.maxEspera = tCola
+        if nCola > self.maxBarcosCola:
+            self.maxBarcosCola = nCola
+        self.mediaBarcosCola += tCola
         self.tiempoMedioAtracar += tAtraco
         self.mediaEspera += tCola
 
     def actualizarBarcosMuelle(self,tMuelle):
         self.mediaBarcosMuelle += tMuelle
+
     def finalizarEstadisticos(self):
         self.tiempoMedioAtracar = self.tiempoMedioAtracar/len(self.listaPetroleros.list)
         self.mediaBarcosMuelle = self.mediaBarcosMuelle/self.tiempo
         self.mediaEspera = self.mediaEspera/len(self.listaPetroleros.list)
+        self.mediaBarcosCola = self.mediaBarcosCola/self.tiempo
         print('Simulacion con ' + str(NUM_MUELLES) + ' muelles y' + str(NUM_REMOLCADORES) + ' cargueros')
         print("Tiempo medio en atracar: " + str(self.tiempoMedioAtracar))
-        print("Tiempo maximo en atracar:")
-        print(self.tiempoMaxAtracar)
-        print("Media de barcos en muelles:")
-        print(self.mediaBarcosMuelle)
-        print("Media tiempo de espera en la entrada:")
-        print(self.mediaEspera)
-        print("Maximo tiempo de espera en la entrada:")
-        print(self.maxEspera)
-        print("Tiempo total de simulacion:")
-        print(self.tiempo)
+        print("Tiempo maximo en atracar:" + str(self.tiempoMaxAtracar))
+        print("Media de barcos en muelles:" + str(self.mediaBarcosMuelle))
+        print("Media tiempo de espera en la entrada:" + str(self.mediaEspera))
+        print("Maximo tiempo de espera en la entrada:" + str(self.maxEspera))
+        print("Media de barcos esperando en la entrada:" + str(self.mediaBarcosCola))
+        print("Maximo de barcos esperando en la entrada:" + str(self.maxBarcosCola))
+        print("Tiempo total de simulacion:" + str(self.tiempo))
 
     # funcion simular
     def simular(self):
@@ -174,7 +178,7 @@ class Main:
                 petrolero = self.listaPetroleros.getById(iD)
                 tiempoAtraco = tiempo - petrolero[1]
                 tiempoEspera = self.tiempo - petrolero[1]
-                self.actualizarEstadisticos(tiempoAtraco,tiempoEspera)
+                self.actualizarEstadisticos(tiempoAtraco,tiempoEspera,0)
             
             else:
                 self.colaEntrada.addBarco(petrolero)
@@ -276,12 +280,14 @@ class Main:
         #Si hay cola y muelles
         elif not self.colaEntrada.isEmpty() and self.listaMuelles.libre():
             tiempoLleno = self.tiempo + get_tiempo_lleno()
+            numBarcosCola = self.colaEntrada.cola_entrada.qsize()
             petrolero = self.colaEntrada.popBarcoEspera()
 
              #Estadisticas
             tiempoAtraco = tiempoLleno - petrolero[1]
             tiempoEspera = self.tiempo - petrolero[1]
-            self.actualizarEstadisticos(tiempoAtraco,tiempoEspera)
+
+            self.actualizarEstadisticos(tiempoAtraco,tiempoEspera,numBarcosCola)
 
             self.listaCargueros.modificar(iD,tiempoLleno,sts.CARGUERO_DIRECCION_MUELLE,petrolero[0])
             self.listaPetroleros.modificar(petrolero[0],tiempoLleno,sts.CARGUERO_ENTRADA_MUELLE_LLENO,iD)
@@ -306,12 +312,13 @@ class Main:
         #Si hay cola y muelles
         elif not self.colaEntrada.isEmpty() and self.listaMuelles.libre():
             tiempoLleno = self.tiempo + get_tiempo_lleno()
+            numBarcosCola = self.colaEntrada.cola_entrada.qsize()
             petrolero = self.colaEntrada.popBarcoEspera()
 
             #Estadisticas
             tiempoAtraco = tiempoLleno - petrolero[1]
             tiempoEspera = self.tiempo - petrolero[1]
-            self.actualizarEstadisticos(tiempoAtraco,tiempoEspera)
+            self.actualizarEstadisticos(tiempoAtraco,tiempoEspera,numBarcosCola)
 
             self.listaCargueros.modificar(iD,tiempoLleno,sts.CARGUERO_DIRECCION_MUELLE,petrolero[0])
             self.listaPetroleros.modificar(petrolero[0],tiempoLleno, sts.CARGUERO_ENTRADA_MUELLE_LLENO, iD)
