@@ -75,12 +75,17 @@ class Main:
         self.tiempoMedioAtracar = self.tiempoMedioAtracar/len(self.listaPetroleros.list)
         self.mediaBarcosMuelle = self.mediaBarcosMuelle/self.tiempo
         self.mediaEspera = self.mediaEspera/len(self.listaPetroleros.list)
-
-        print(self.tiempoMedioAtracar)
+        print('Simulacion con ' + str(NUM_MUELLES) + ' muelles y' + str(NUM_REMOLCADORES) + ' cargueros')
+        print("Tiempo medio en atracar: " + str(self.tiempoMedioAtracar))
+        print("Tiempo maximo en atracar:")
         print(self.tiempoMaxAtracar)
+        print("Media de barcos en muelles:")
         print(self.mediaBarcosMuelle)
+        print("Media tiempo de espera en la entrada:")
         print(self.mediaEspera)
+        print("Maximo tiempo de espera en la entrada:")
         print(self.maxEspera)
+        print("Tiempo total de simulacion:")
         print(self.tiempo)
 
     # funcion simular
@@ -96,10 +101,10 @@ class Main:
         else:
             self.listaEventos.añadirEvento(sts.LLEGADA_A_PUERTO, tiempo)
             while self.listaEventos.numEventos() > 0:
-                print("EVENTOS")
-                print(self.listaEventos.list)
-                print("BARCOS")
-                print(self.listaPetroleros.list)
+                #print("EVENTOS")
+                #print(self.listaEventos.list)
+                #print("BARCOS")
+                #print(self.listaPetroleros.list)
                 #POP
                 evento = self.listaEventos.getEvento()
                 id = evento[2] # id del petrolero o del carguero (segun el vento recogido)
@@ -309,7 +314,7 @@ class Main:
             self.actualizarEstadisticos(tiempoAtraco,tiempoEspera)
 
             self.listaCargueros.modificar(iD,tiempoLleno,sts.CARGUERO_DIRECCION_MUELLE,petrolero[0])
-            self.listaPetroleros.modificar(petrolero[0],tiempoLleno, sts.CARGUERO_ENTRADA_MUELLE_LLENO)
+            self.listaPetroleros.modificar(petrolero[0],tiempoLleno, sts.CARGUERO_ENTRADA_MUELLE_LLENO, iD)
             self.listaMuelles.addBarcoMuelle()
 
             self.listaEventos.añadirEvento(sts.CARGUERO_ENTRADA_MUELLE_LLENO,tiempoLleno,iD)
