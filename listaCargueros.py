@@ -37,7 +37,7 @@ class ListaCargueros:
     def libreEntrada(self):
         res=False
         for carguero in self.list:
-            if carguero[2]==0:
+            if carguero[2]==sts.CARGUERO_COLA_ENTRADA:
                 res=True
                 break
         return res
@@ -45,7 +45,7 @@ class ListaCargueros:
     def libreSalida(self):
         res=False
         for carguero in self.list:
-            if carguero[2]==2:
+            if carguero[2]==sts.CARGUERO_COLA_MUELLE:
                 res=True
                 break
         return res
@@ -53,7 +53,7 @@ class ListaCargueros:
     def getLibreEntrada(self):
         res = []
         for carguero in self.list:
-            if carguero[2]==0:
+            if carguero[2]==sts.CARGUERO_COLA_ENTRADA:
                 res = carguero
                 break
         return res
@@ -61,7 +61,7 @@ class ListaCargueros:
     def getLibreSalida(self):
         res = []
         for carguero in self.list:
-            if carguero[2]==2:
+            if carguero[2]==sts.CARGUERO_COLA_MUELLE:
                 res = carguero
                 break
         return res
