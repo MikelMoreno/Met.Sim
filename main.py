@@ -82,15 +82,17 @@ class Main:
         self.mediaBarcosMuelle = self.mediaBarcosMuelle/self.tiempo
         self.mediaEspera = self.mediaEspera/len(self.listaPetroleros.list)
         self.mediaBarcosCola = self.mediaBarcosCola/self.tiempo
-        print('Simulacion con ' + str(NUM_MUELLES) + ' muelles y' + str(NUM_REMOLCADORES) + ' cargueros')
-        print("Tiempo medio en atracar: " + str(self.tiempoMedioAtracar))
-        print("Tiempo maximo en atracar:" + str(self.tiempoMaxAtracar))
-        print("Media de barcos en muelles:" + str(self.mediaBarcosMuelle))
-        print("Media tiempo de espera en la entrada:" + str(self.mediaEspera))
-        print("Maximo tiempo de espera en la entrada:" + str(self.maxEspera))
-        print("Media de barcos esperando en la entrada:" + str(self.mediaBarcosCola))
-        print("Maximo de barcos esperando en la entrada:" + str(self.maxBarcosCola))
-        print("Tiempo total de simulacion:" + str(self.tiempo))
+        # print('Simulacion con ' + str(NUM_MUELLES) + ' muelles y' + str(NUM_REMOLCADORES) + ' cargueros')
+        print(round(self.tiempoMedioAtracar,2),round(self.tiempoMaxAtracar,2),round(self.mediaBarcosMuelle,2),round(self.mediaEspera,2),round(self.maxEspera,2),round(self.mediaBarcosCola,2),round(self.maxBarcosCola,2),round(self.tiempo,2))
+        # print('Simulacion con ' + str(NUM_MUELLES) + ' muelles y' + str(NUM_REMOLCADORES) + ' cargueros')
+        # print("Tiempo medio en atracar: " + str(self.tiempoMedioAtracar))
+        # print("Tiempo maximo en atracar:" + str(self.tiempoMaxAtracar))
+        # print("Media de barcos en muelles:" + str(self.mediaBarcosMuelle))
+        # print("Media tiempo de espera en la entrada:" + str(self.mediaEspera))
+        # print("Maximo tiempo de espera en la entrada:" + str(self.maxEspera))
+        # print("Media de barcos esperando en la entrada:" + str(self.mediaBarcosCola))
+        # print("Maximo de barcos esperando en la entrada:" + str(self.maxBarcosCola))
+        # print("Tiempo total de simulacion:" + str(self.tiempo))
 
     # funcion simular
     def simular(self):
